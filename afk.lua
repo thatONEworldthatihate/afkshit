@@ -7,6 +7,9 @@ game.ReplicatedStorage.Events.SkillcheckUpdate.OnClientInvoke = function()
     return "supercomplete"
 end
 
+-- gravity
+workspace.Gravity = 0
+
 local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0, 250, 0, 260)
 Frame.Position = UDim2.new(0.5, -125, 0.5, -130)
@@ -257,7 +260,6 @@ local function IsBeingChased()
             end
         end
     end
-    return false
 end
 
 local function SafeTeleport(targetCFrame)
