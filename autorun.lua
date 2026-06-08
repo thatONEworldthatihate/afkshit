@@ -1,30 +1,35 @@
 task.spawn(function()
-    local LocalPlayer = game.Players.LocalPlayer
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local SprintEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("SprintEvent")
+    local lp = game.Players.LocalPlayer
+    local rs = game:GetService("ReplicatedStorage")
+    local sprintEvent = rs:WaitForChild("Events"):WaitForChild("SprintEvent")
     
-    local sprinting = false
+    -- Local variables to track state without relying on complex logic
+    local resumeThreshold = 40
+    local stopThreshold = 20
+    local isSprinting = false
 
-    while true do
-        local playerFolder = workspace:WaitForChild("InGamePlayers"):FindFirstChild(LocalPlayer.Name)
-        local staminaVal = playerFolder and playerFolder:FindFirstChild("Stats") and playerFolder.Stats:FindFirstChild("CurrentStamina")
+    while task.wait(0.2) do
+        local stats = workspace:FindFirstChild("InGamePlayers") 
+            and workspace.InGamePlayers:FindFirstChild(lp.Name) 
+            and workspace.InGamePlayers[lp.Name]:FindFirstChild("Stats")
+            and workspace.InGamePlayers[lp.Name].Stats:FindFirstChild("CurrentStamina")
 
-        if staminaVal then
-            local stamina = staminaVal.Value
+        if stats then
+            local stam = stats.Value
 
-            -- Logic: Sprint if > 20, Stop if < 20, Resume at 40
-            if not sprinting and stamina > 20 then
-                sprinting = true
-                SprintEvent:FireServer(true)
-            elseif sprinting and stamina < 20 then
-                sprinting = false
-                SprintEvent:FireServer(false)
-            elseif not sprinting and stamina >= 40 then
-                sprinting = true
-                SprintEvent:FireServer(true)
+            -- Start Sprinting Logic
+            if not isSprinting and (stam > stopThreshold) then
+                sprintEvent:FireServer(true)
+                isSprinting = true
+            -- Stop Sprinting Logic
+            elseif isSprinting and (stam < stopThreshold) then
+                sprintEvent:FireServer(false)
+                isSprinting = false
+            -- Resume Logic (Wait until 40)
+            elseif not isSprinting and (stam >= resumeThreshold) then
+                sprintEvent:FireServer(true)
+                isSprinting = true
             end
         end
-        
-        task.wait(0.5) -- Prevents script lag
     end
 end)
